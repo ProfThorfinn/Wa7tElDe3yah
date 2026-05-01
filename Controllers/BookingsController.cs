@@ -17,7 +17,15 @@ namespace Wa7at_ElDr3yah_API.Controllers
             _bookingService = bookingService;
         }
 
-        
+        /// <summary>
+        /// Get all bookings.
+        /// </summary>
+        /// <remarks>
+        /// Returns all bookings ordered by booking date.
+        /// Each booking includes customer data, payment details, remaining amount, status, and creator information.
+        /// Requires authentication.
+        /// </remarks>
+        /// <returns>List of bookings.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -25,7 +33,15 @@ namespace Wa7at_ElDr3yah_API.Controllers
             return Ok(data);
         }
 
-        
+        /// <summary>
+        /// Get booking by id.
+        /// </summary>
+        /// <remarks>
+        /// Returns a single booking using its unique identifier.
+        /// Requires authentication.
+        /// </remarks>
+        /// <param name="id">Booking id.</param>
+        /// <returns>Booking details if found.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -37,7 +53,15 @@ namespace Wa7at_ElDr3yah_API.Controllers
             return Ok(booking);
         }
 
-        
+        /// <summary>
+        /// Create a new booking.
+        /// </summary>
+        /// <remarks>
+        /// Creates a new booking with the provided details.
+        /// Requires authentication.
+        /// </remarks>
+        /// <param name="dto">Booking details.</param>
+        /// <returns>Created booking details.</returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookingRequestDto dto)
         {
@@ -55,7 +79,20 @@ namespace Wa7at_ElDr3yah_API.Controllers
             }
         }
 
-        
+        /// <summary>
+        /// Update an existing booking.
+        /// </summary>
+        /// <remarks>
+        /// Business rules:
+        /// - User must be authenticated.
+        /// - Booking must exist.
+        /// - The updated date cannot conflict with another booking.
+        /// - PaidAmount cannot be greater than TotalPrice.
+        /// - RemainingAmount is recalculated automatically.
+        /// </remarks>
+        /// <param name="id">Booking id.</param>
+        /// <param name="dto">Updated booking data.</param>
+        /// <returns>The updated booking details.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] BookingRequestDto dto)
         {
@@ -74,8 +111,16 @@ namespace Wa7at_ElDr3yah_API.Controllers
             }
         }
 
-        
-       [HttpDelete("{id}")]
+        /// <summary>
+        /// Delete a booking.
+        /// </summary>
+        /// <remarks>
+        /// Deletes an existing booking by id.
+        /// Requires authentication.
+        /// </remarks>
+        /// <param name="id">Booking id.</param>
+        /// <returns>Success message if deleted.</returns>
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _bookingService.DeleteAsync(id);
@@ -86,7 +131,16 @@ namespace Wa7at_ElDr3yah_API.Controllers
             return Ok("Deleted successfully");
         }
 
-        
+
+        /// <summary>
+        /// Get booked dates.
+        /// </summary>
+        /// <remarks>
+        /// Returns all reserved dates.
+        /// Used by the frontend calendar to highlight booked dates and prevent double booking.
+        /// Requires authentication.
+        /// </remarks>
+        /// <returns>List of booked dates.</returns>
         [HttpGet("booked-dates")]
         public async Task<IActionResult> GetBookedDates()
         {

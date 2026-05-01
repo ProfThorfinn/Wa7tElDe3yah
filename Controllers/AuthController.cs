@@ -15,7 +15,15 @@ namespace Wa7at_ElDr3yah_API.Controllers
             _authService = authService;
         }
 
-        
+        /// <summary>
+        /// Login using email and password.
+        /// </summary>
+        /// <remarks>
+        /// Returns a JWT token if the email and password are valid.
+        /// The token must be used in protected endpoints using Bearer authentication.
+        /// </remarks>
+        /// <param name="dto">Login credentials.</param>
+        /// <returns>JWT token and user information.</returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -27,7 +35,19 @@ namespace Wa7at_ElDr3yah_API.Controllers
             return Ok(result);
         }
 
-        
+        /// <summary>
+        /// Send a password reset code to the user's email.
+        /// </summary>
+        /// <remarks>
+        /// Business rules:
+        /// - User must exist by email.
+        /// - Reset code is sent to the user's email.
+        /// - Reset code is stored as a hash.
+        /// - Reset code expires after a limited time.
+        /// - User cannot request another reset code before the rate limit period ends.
+        /// </remarks>
+        /// <param name="dto">User email.</param>
+        /// <returns>Confirmation message if the reset code was sent.</returns>
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
@@ -52,7 +72,18 @@ namespace Wa7at_ElDr3yah_API.Controllers
             }
         }
 
-        
+        /// <summary>
+        /// Reset user password using the verification code.
+        /// </summary>
+        /// <remarks>
+        /// Business rules:
+        /// - Reset code must be valid.
+        /// - Reset code must not be expired.
+        /// - New password must be strong.
+        /// - New password is stored as a BCrypt hash.
+        /// </remarks>
+        /// <param name="dto">Email, reset code, and new password.</param>
+        /// <returns>Confirmation message after password reset.</returns>
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
