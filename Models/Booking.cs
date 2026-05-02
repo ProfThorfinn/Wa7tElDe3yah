@@ -33,7 +33,7 @@ namespace Wa7at_ElDr3yah_API.Models
         public decimal RemainingAmount { get; set; }
 
         [Required]
-        public BookingStatus Status { get; set; } = BookingStatus.Booked;
+        public BookingStatus Status { get; set; }
 
         [MaxLength(500)]
         public string? Notes { get; set; }

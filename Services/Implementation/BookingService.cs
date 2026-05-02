@@ -56,7 +56,7 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
                 PaidAmount = dto.PaidAmount,
                 RemainingAmount = dto.TotalPrice - dto.PaidAmount,
                 Notes = dto.Notes,
-                Status = BookingStatus.Booked,
+                Status = dto.BookingStatus,
                 CreatedByUserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -100,6 +100,7 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
             booking.PaidAmount = dto.PaidAmount;
             booking.RemainingAmount = dto.TotalPrice - dto.PaidAmount;
             booking.Notes = dto.Notes;
+            booking.Status = dto.BookingStatus;
             booking.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
