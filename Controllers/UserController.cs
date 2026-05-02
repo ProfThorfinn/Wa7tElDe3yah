@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Wa7at_ElDr3yah_API.DTOs.User;
+using Wa7at_ElDr3yah_API.Models;
 using Wa7at_ElDr3yah_API.Services.Interfaces;
+using Wa7at_ElDr3yah_API.Data;
 
 namespace Wa7at_ElDr3yah_API.Controllers
 {
@@ -9,10 +13,12 @@ namespace Wa7at_ElDr3yah_API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly AppDbContext _context;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, AppDbContext context)
         {
             _userService = userService;
+            _context = context;
         }
 
         /// <summary>
@@ -51,6 +57,29 @@ namespace Wa7at_ElDr3yah_API.Controllers
         }
 
         /// <summary>
+        /// Initialize first owner (Development only).
+        /// </summary>
+        /// <remarks>
+        /// Creates the first Owner in the system.
+        /// This endpoint should be used ONLY once and then removed.
+        /// </remarks>
+        [AllowAnonymous]
+        [HttpPost("init-owner")]
+        public async Task<IActionResult> InitOwner([FromBody] UserRequestDto dto)
+        {
+            var exists = await _context.Users.AnyAsync(u => u.Role == Role.Owner);
+
+            if (exists)
+                return BadRequest("Owner already exists");
+
+            dto.Role = Role.Owner;
+
+            var user = await _userService.CreateAsync(dto);
+
+            return Ok(user);
+        }
+
+        /// <summary>
         /// Create a new system user.
         /// </summary>
         /// <remarks>
@@ -63,6 +92,7 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <param name="dto">User creation data.</param>
         /// <returns>The created user details.</returns>
         [HttpPost]
+        [Authorize(Roles ="Owner")]
         public async Task<IActionResult> Create([FromBody] UserRequestDto dto)
         {
             try
@@ -90,6 +120,8 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <param name="dto">Updated user data.</param>
         /// <returns>The updated user details.</returns>
         [HttpPut("{id}")]
+        [Authorize(Roles = "Owner")]
+
         public async Task<IActionResult> Update(int id, [FromBody] UserRequestDto dto)
         {
             try
@@ -137,6 +169,7 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <param name="id">User id.</param>
         /// <returns>Success message if deleted.</returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _userService.DeleteAsync(id);

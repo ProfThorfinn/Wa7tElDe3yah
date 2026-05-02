@@ -1,4 +1,4 @@
-﻿namespace Wa7at_ElDr3yah_API.Services
+﻿namespace Wa7at_ElDr3yah_API.Services.Implementation
 {
     using System.Net;
     using System.Net.Mail;

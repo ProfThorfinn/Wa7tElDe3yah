@@ -94,7 +94,7 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
 
             await _context.SaveChangesAsync();
 
-            var subject = "Reset Your Password - Wa7at ElDr3yah";
+            var subject = "Reset Your Password - واحة الدرعية";
 
             var body = $@"
     <div style='font-family:Arial,sans-serif;background:#f5f5f5;padding:30px;'>

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Wa7at_ElDr3yah_API.DTOs.Booking;
+using Wa7at_ElDr3yah_API.Models;
 using Wa7at_ElDr3yah_API.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Wa7at_ElDr3yah_API.Controllers
 {
@@ -20,12 +21,6 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <summary>
         /// Get all bookings.
         /// </summary>
-        /// <remarks>
-        /// Returns all bookings ordered by booking date.
-        /// Each booking includes customer data, payment details, remaining amount, status, and creator information.
-        /// Requires authentication.
-        /// </remarks>
-        /// <returns>List of bookings.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -36,12 +31,6 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <summary>
         /// Get booking by id.
         /// </summary>
-        /// <remarks>
-        /// Returns a single booking using its unique identifier.
-        /// Requires authentication.
-        /// </remarks>
-        /// <param name="id">Booking id.</param>
-        /// <returns>Booking details if found.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -56,12 +45,6 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <summary>
         /// Create a new booking.
         /// </summary>
-        /// <remarks>
-        /// Creates a new booking with the provided details.
-        /// Requires authentication.
-        /// </remarks>
-        /// <param name="dto">Booking details.</param>
-        /// <returns>Created booking details.</returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookingRequestDto dto)
         {
@@ -71,7 +54,7 @@ namespace Wa7at_ElDr3yah_API.Controllers
 
                 var result = await _bookingService.CreateAsync(dto, userId);
 
-                return Ok(result);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
             }
             catch (Exception ex)
             {
@@ -82,17 +65,6 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <summary>
         /// Update an existing booking.
         /// </summary>
-        /// <remarks>
-        /// Business rules:
-        /// - User must be authenticated.
-        /// - Booking must exist.
-        /// - The updated date cannot conflict with another booking.
-        /// - PaidAmount cannot be greater than TotalPrice.
-        /// - RemainingAmount is recalculated automatically.
-        /// </remarks>
-        /// <param name="id">Booking id.</param>
-        /// <param name="dto">Updated booking data.</param>
-        /// <returns>The updated booking details.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] BookingRequestDto dto)
         {
@@ -114,12 +86,6 @@ namespace Wa7at_ElDr3yah_API.Controllers
         /// <summary>
         /// Delete a booking.
         /// </summary>
-        /// <remarks>
-        /// Deletes an existing booking by id.
-        /// Requires authentication.
-        /// </remarks>
-        /// <param name="id">Booking id.</param>
-        /// <returns>Success message if deleted.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -131,21 +97,46 @@ namespace Wa7at_ElDr3yah_API.Controllers
             return Ok("Deleted successfully");
         }
 
-
         /// <summary>
         /// Get booked dates.
         /// </summary>
-        /// <remarks>
-        /// Returns all reserved dates.
-        /// Used by the frontend calendar to highlight booked dates and prevent double booking.
-        /// Requires authentication.
-        /// </remarks>
-        /// <returns>List of booked dates.</returns>
         [HttpGet("booked-dates")]
         public async Task<IActionResult> GetBookedDates()
         {
             var dates = await _bookingService.GetBookedDatesAsync();
             return Ok(dates);
+        }
+
+        /// <summary>
+        /// Filter bookings by date range and status.
+        /// </summary>
+        /// <remarks>
+        /// Example:
+        /// GET /api/bookings/filter?from=2026-05-01&amp;to=2026-05-31&amp;status=Booked
+        /// </remarks>
+        [HttpGet("filter")]
+        public async Task<IActionResult> Filter(
+            [FromQuery] DateTime? from,
+            [FromQuery] DateTime? to,
+            [FromQuery] BookingStatus? status)
+        {
+            var result = await _bookingService.FilterAsync(from, to, status);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Search bookings by customer name or phone number.
+        /// </summary>
+        /// <remarks>
+        /// Example:
+        /// GET /api/bookings/search?keyword=Mahmoud
+        /// GET /api/bookings/search?keyword=0555
+        /// </remarks>
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string keyword)
+        {
+            var result = await _bookingService.SearchAsync(keyword);
+            return Ok(result);
         }
     }
 }

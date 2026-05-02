@@ -1,4 +1,6 @@
-﻿namespace Wa7at_ElDr3yah_API.DTOs.Booking
+﻿using Wa7at_ElDr3yah_API.Models;
+
+namespace Wa7at_ElDr3yah_API.DTOs.Booking
 {
     public class BookingResponseDto
     {
@@ -16,6 +18,8 @@
         public decimal RemainingAmount { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Notes { get; set; }
+
+        public BookingStatus BookingStatus { get; set; }
 
         public string CreatedByUserName { get; set; } = string.Empty;
 

@@ -10,6 +10,8 @@
 
         public string? Notes { get; set; }
 
+        public string CreatedByUserName { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
     }
 }

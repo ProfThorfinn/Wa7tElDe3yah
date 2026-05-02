@@ -19,23 +19,8 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
         {
             return await _context.Bookings
                 .Include(b => b.CreatedByUser)
-                .OrderBy(b => b.BookingDate)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    CustomerName = b.CustomerName,
-                    ContactNumber = b.ContactNumber,
-                    BookingDate = b.BookingDate,
-                    DayName = b.DayName,
-                    BookingType = b.BookingType,
-                    TotalPrice = b.TotalPrice,
-                    PaidAmount = b.PaidAmount,
-                    RemainingAmount = b.TotalPrice - b.PaidAmount,
-                    Status = b.Status.ToString(),
-                    Notes = b.Notes,
-                    CreatedByUserName = b.CreatedByUser.FullName,
-                    CreatedAt = b.CreatedAt
-                })
+                .OrderByDescending(b => b.BookingDate)
+                .Select(b => MapToResponseDto(b))
                 .ToListAsync();
         }
 
@@ -45,16 +30,14 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
                 .Include(b => b.CreatedByUser)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
-            if (booking == null)
-                return null;
-
-            return MapToResponseDto(booking);
+            return booking == null ? null : MapToResponseDto(booking);
         }
 
         public async Task<BookingResponseDto> CreateAsync(BookingRequestDto dto, int userId)
         {
-            var isBooked = await _context.Bookings
-                .AnyAsync(b => b.BookingDate.Date == dto.BookingDate.Date);
+            var isBooked = await _context.Bookings.AnyAsync(b =>
+                b.Status != BookingStatus.Cancelled &&
+                b.BookingDate.Date == dto.BookingDate.Date);
 
             if (isBooked)
                 throw new Exception("This date is already booked");
@@ -73,7 +56,9 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
                 PaidAmount = dto.PaidAmount,
                 RemainingAmount = dto.TotalPrice - dto.PaidAmount,
                 Notes = dto.Notes,
-                CreatedByUserId = userId
+                Status = BookingStatus.Booked,
+                CreatedByUserId = userId,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Bookings.Add(booking);
@@ -95,8 +80,10 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
             if (booking == null)
                 return null;
 
-            var isBooked = await _context.Bookings
-                .AnyAsync(b => b.Id != id && b.BookingDate.Date == dto.BookingDate.Date);
+            var isBooked = await _context.Bookings.AnyAsync(b =>
+                b.Id != id &&
+                b.Status != BookingStatus.Cancelled &&
+                b.BookingDate.Date == dto.BookingDate.Date);
 
             if (isBooked)
                 throw new Exception("This date is already booked");
@@ -138,6 +125,47 @@ namespace Wa7at_ElDr3yah_API.Services.Implementation
             return await _context.Bookings
                 .Where(b => b.Status != BookingStatus.Cancelled)
                 .Select(b => b.BookingDate.Date)
+                .ToListAsync();
+        }
+
+        public async Task<List<BookingResponseDto>> FilterAsync(
+            DateTime? from,
+            DateTime? to,
+            BookingStatus? status)
+        {
+            var query = _context.Bookings
+                .Include(b => b.CreatedByUser)
+                .AsQueryable();
+
+            if (from.HasValue)
+                query = query.Where(b => b.BookingDate.Date >= from.Value.Date);
+
+            if (to.HasValue)
+                query = query.Where(b => b.BookingDate.Date <= to.Value.Date);
+
+            if (status.HasValue)
+                query = query.Where(b => b.Status == status.Value);
+
+            return await query
+                .OrderByDescending(b => b.BookingDate)
+                .Select(b => MapToResponseDto(b))
+                .ToListAsync();
+        }
+
+        public async Task<List<BookingResponseDto>> SearchAsync(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                return new List<BookingResponseDto>();
+
+            keyword = keyword.Trim();
+
+            return await _context.Bookings
+                .Include(b => b.CreatedByUser)
+                .Where(b =>
+                    b.CustomerName.Contains(keyword) ||
+                    b.ContactNumber.Contains(keyword))
+                .OrderByDescending(b => b.BookingDate)
+                .Select(b => MapToResponseDto(b))
                 .ToListAsync();
         }
 
