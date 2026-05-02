@@ -6,16 +6,6 @@ This API is designed for managing bookings, expenses, capital, users, and financ
 
 ---
 
-## 🌐 Base URL
-
-```txt
-https://your-domain.com
-```
-
-> Replace with ngrok link or deployed server URL.
-
----
-
 ## 🔐 Authentication
 
 All protected endpoints require JWT Bearer Token.
