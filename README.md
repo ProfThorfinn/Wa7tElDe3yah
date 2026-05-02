@@ -1,4 +1,3 @@
-أكيد، ده README كامل ومفصل تقدر تحطه مباشرة في GitHub:
 # Wa7at ElDr3yah Booking & Financial Management System
 
 ## نظام واحة الدرعية لإدارة الحجوزات والحسابات المالية
